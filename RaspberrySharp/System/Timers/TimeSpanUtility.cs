@@ -14,7 +14,12 @@ namespace RaspberrySharp.System.Timers
         /// <returns></returns>
         public static TimeSpan FromMicroseconds(double microseconds)
         {
-            return TimeSpan.FromTicks((long)(microseconds / 10));
+            return TimeSpan.FromTicks((long)(microseconds * 10));
+        }
+
+        public static double GetTotalMicroseconds(this TimeSpan timeSpan)
+        {
+            return timeSpan.TotalMilliseconds * 1000;
         }
     }
 }

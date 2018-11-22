@@ -3,6 +3,7 @@ using RaspberrySharp.System;
 using RaspberrySharp.System.Timers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 
@@ -171,13 +172,13 @@ namespace RaspberrySharp.IO.GeneralPurpose
         /// </remarks>
         public void Wait(ProcessorPin pin, bool waitForUp = true, TimeSpan timeout = new TimeSpan())
         {
-            var startWait = DateTime.UtcNow;
+            var stopwatch = Stopwatch.StartNew();
             if (timeout == TimeSpan.Zero)
                 timeout = DefaultTimeout;
 
             while (Read(pin) != waitForUp)
             {
-                if (DateTime.UtcNow >= startWait + timeout)
+                if (stopwatch.Elapsed > timeout)
                     throw new TimeoutException("A timeout occurred while waiting for pin status to change");
             }
         }

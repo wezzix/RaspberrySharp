@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -31,6 +32,11 @@ namespace RaspberrySharp.System.Timers
         {
             if (!Board.Current.IsRaspberryPi)
                 throw new NotSupportedException("Cannot use HighResolutionTimer on a platform different than Raspberry Pi");
+        }
+
+        public static int NanoSleepOffset
+        {
+            get { return nanoSleepOffset; }
         }
 
         #endregion
@@ -87,20 +93,22 @@ namespace RaspberrySharp.System.Timers
 
             // Calling nanosleep() takes at least 100-200 us, so use it for
             // long waits and use a busy wait on the hires timer for the rest.
-            var start = DateTime.UtcNow.Ticks;
+            var stopWatch = Stopwatch.StartNew();
 
-            var millisecondDelay = (decimal)delay.TotalMilliseconds;
+            var millisecondDelay = delay.TotalMilliseconds;
+            if (millisecondDelay == 0) return;
+
             if (millisecondDelay >= 100)
             {
                 // Do not use high resolution timer for long interval (>= 100ms)
                 Thread.Sleep(delay);
             }
-            else if (millisecondDelay > 0.450m)
+            // Use nanosleep if interval is higher than 450µs
+            else if (millisecondDelay > 0.450d)
             {
                 var t1 = new Interop.Timespec();
                 var t2 = new Interop.Timespec();
-
-                // Use nanosleep if interval is higher than 450µs
+                
                 t1.tv_sec = (IntPtr)0;
                 t1.tv_nsec = (IntPtr)((long)(millisecondDelay * 1000000) - nanoSleepOffset);
 
@@ -110,7 +118,7 @@ namespace RaspberrySharp.System.Timers
             {
                 while (true)
                 {
-                    if ((DateTime.UtcNow.Ticks - start) * 0.0001m >= millisecondDelay)
+                    if (stopWatch.Elapsed.TotalMilliseconds >= millisecondDelay)
                         break;
                 }
             }
@@ -173,10 +181,10 @@ namespace RaspberrySharp.System.Timers
                         t1.tv_sec = (IntPtr)0;
                         t1.tv_nsec = (IntPtr)1000000;
 
-                        var start = DateTime.UtcNow.Ticks;
+                        var stopWatch = Stopwatch.StartNew();
                         Interop.nanosleep(ref t1, ref t2);
 
-                        return a + ((DateTime.UtcNow.Ticks - start) * 100 - 1000000);
+                        return a + (long)(stopWatch.Elapsed.TotalMilliseconds * 1000000 - 1000000);
                     },
                     a => (int)(a / referenceCount));
         }
