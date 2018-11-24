@@ -155,10 +155,7 @@ namespace RaspberrySharp.System.Timers
             {
                 if (thread == null)
                     return;
-
-                if (thread != Thread.CurrentThread)
-                    tokenSource.Cancel();
-
+                
                 thread = null;
             }
         }
