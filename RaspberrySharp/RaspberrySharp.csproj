@@ -29,7 +29,6 @@ This library is a complete refactoring of Raspberry-Sharp libraries, merged into
     <Folder Include="Components\Devices\" />
     <Folder Include="Components\Displays\" />
     <Folder Include="Components\Memories\" />
-    <Folder Include="Components\Expanders\" />
     <Folder Include="Components\Leds\" />
     <Folder Include="Components\Monitors\" />
     <Folder Include="Components\Sensors\Temperature\" />
